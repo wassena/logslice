@@ -46,6 +46,16 @@ class SliceStats:
             return (self.end_time - self.start_time).total_seconds()
         return None
 
+    @property
+    def matched_time_span(self) -> Optional[float]:
+        """Return the seconds between the first and last matched timestamps.
+
+        Returns None if fewer than two matched timestamps have been recorded.
+        """
+        if self.first_matched_ts is not None and self.last_matched_ts is not None:
+            return (self.last_matched_ts - self.first_matched_ts).total_seconds()
+        return None
+
 
 def format_stats(stats: SliceStats) -> str:
     """Return a human-readable summary string for the given SliceStats."""
@@ -59,6 +69,8 @@ def format_stats(stats: SliceStats) -> str:
         lines.append(f"First matched ts      : {stats.first_matched_ts.isoformat()}")
     if stats.last_matched_ts:
         lines.append(f"Last matched ts       : {stats.last_matched_ts.isoformat()}")
+    if stats.matched_time_span is not None:
+        lines.append(f"Matched time span     : {stats.matched_time_span:.3f}s")
     if stats.elapsed_seconds is not None:
         lines.append(f"Elapsed               : {stats.elapsed_seconds:.3f}s")
     if stats.patterns_matched:
