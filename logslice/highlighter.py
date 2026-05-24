@@ -15,6 +15,9 @@ HIGHLIGHT_COLORS = [
     ANSI_BOLD_CYAN,
 ]
 
+# Compiled pattern for stripping ANSI escape codes
+_ANSI_ESCAPE_RE = re.compile(r"\033\[[0-9;]*m")
+
 
 def highlight_pattern(line: str, pattern: str, color: Optional[str] = None) -> str:
     """Highlight all occurrences of pattern in line with ANSI color codes.
@@ -77,5 +80,25 @@ def strip_ansi(text: str) -> str:
     Returns:
         Plain text with all ANSI codes removed.
     """
-    ansi_escape = re.compile(r"\033\[[0-9;]*m")
-    return ansi_escape.sub("", text)
+    return _ANSI_ESCAPE_RE.sub("", text)
+
+
+def has_match(line: str, pattern: str) -> bool:
+    """Check whether a pattern matches anywhere in a line.
+
+    This is a convenience wrapper around ``re.search`` that falls back to a
+    literal substring check when *pattern* is not a valid regular expression.
+
+    Args:
+        line: The text line to search.
+        pattern: Regex pattern (or plain string) to look for.
+
+    Returns:
+        ``True`` if the pattern is found in *line*, ``False`` otherwise.
+    """
+    if not pattern:
+        return False
+    try:
+        return bool(re.search(pattern, line, flags=re.IGNORECASE))
+    except re.error:
+        return pattern.lower() in line.lower()
